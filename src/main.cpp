@@ -38,6 +38,31 @@ double distance(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 }
+
+double get_lane(double car_coord)
+{
+	double laneNumber;
+
+	if ((car_coord >=0) and (car_coord <4.0))
+	{
+		laneNumber = 1;
+	}	
+	else if ((car_coord >=4.0) and (car_coord < 8.0))
+	{
+		laneNumber = 2;
+	}
+	else if((car_coord >=8.0) and (car_coord < 12.0))
+	{
+		laneNumber = 3;
+	}
+	else
+	{
+		laneNumber = 0;
+	}
+	
+	return laneNumber;
+	
+}
 int ClosestWaypoint(double x, double y, const vector<double> &maps_x, const vector<double> &maps_y)
 {
 
@@ -158,6 +183,100 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 	return {x,y};
 
 }
+
+
+double cost_to_straight(double dist_closest_front, double num_cars_mylane, double buffer_my, double cost_collision)
+{	double cost;
+	if (num_cars_mylane  == 0)
+	 {
+		  cost = 0;
+	 }
+	else 
+	{
+		if (dist_closest_front <= buffer_my)
+		{
+			cost = cost_collision;
+		}	
+		else
+		{
+			cost = 0;
+		}
+	}
+	return cost;
+}
+
+double cost_to_left(double dist_closest_leftfront,double dist_closest_leftback, double buffer_lc, double cost_collision, double cost_left_turn, double violate_left)
+{	double cost;
+	
+	if (violate_left  == 1)
+	 {
+		  cost = cost_collision;
+	 }
+	else 
+	{
+		if ((dist_closest_leftfront >= 2.5*buffer_lc)  and (dist_closest_leftback >= 0.6*buffer_lc))// No car is close by on either front or back
+		{
+			if (dist_closest_leftfront >=200)
+			{
+			cost = cost_left_turn*0.90;
+			}
+			else
+			{
+				cost = cost_left_turn;
+			}
+		}
+		
+		else
+		{
+			cost = cost_collision; 
+		}
+	}
+	
+	return cost;
+	
+}
+
+
+
+double cost_to_right(double dist_closest_rightfront,double dist_closest_rightback, double buffer_lc, double cost_collision, double cost_right_turn, double violate_right)
+{ 	double cost;
+	
+	if (violate_right  == 1)
+	 {
+		 cost = cost_collision;
+	 }
+	 
+	else 
+	{
+		if ((dist_closest_rightfront >= 2.5*buffer_lc)  and (dist_closest_rightback >= 0.6*buffer_lc))// No car is close by on either front or back
+		{
+			if (dist_closest_rightfront >=200)
+			{
+			cost = cost_right_turn*0.90; 
+			}
+			
+			else
+			{
+				cost = cost_right_turn; 
+			}
+		}
+		else
+		{
+			cost = cost_collision; 
+		}
+	}
+	
+	return cost;
+	
+}
+
+double cost_to_stop(double breaks_cost)
+{
+	double cost;
+	cost = breaks_cost + 0.0;
+	return cost;
+}
+
 
 int main() {
   uWS::Hub h;
